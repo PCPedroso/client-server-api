@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"gorm.io/driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -43,8 +44,7 @@ func main() {
 }
 
 func BuscaCotacaoHandler(w http.ResponseWriter, r *http.Request) {
-	dsn := "root:root@tcp(localhost:3306)/goexpert?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("goexpert.db"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -112,13 +112,13 @@ func BuscaCambio() (*Cambio, error) {
 func SalvaCotacao(cambio Cambio) (*Cotacao, error) {
 	cotacao := CambioToCotacao(cambio)
 
-	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/goexpert")
+	db, err := sql.Open("sqlite3", "goexpert.db")
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO cotacaos (valor, create_date) VALUES (?,?)")
+	stmt, err := db.Prepare("INSERT INTO cotacaos (valor, create_date) VALUES ($1, $2)")
 	if err != nil {
 		return nil, err
 	}
